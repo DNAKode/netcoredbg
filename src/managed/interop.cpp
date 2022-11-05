@@ -114,7 +114,7 @@ int ReadMemoryForSymbols(uint64_t address, char *buffer, int cb)
     if (address == 0 || buffer == 0 || cb == 0)
         return 0;
 
-    std::memcpy(buffer, (const void*) address, cb);
+    std::memcpy(buffer, (const void*)address, cb);
     return cb;
 }
 
