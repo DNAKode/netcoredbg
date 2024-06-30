@@ -643,7 +643,10 @@ HRESULT ManagedDebugger::RunProcess(const std::string& fileExec, const std::vect
     ss << "\"" << fileExec << "\"";
     for (const std::string &arg : execArgs)
     {
-        ss << " \"" << EscapeShellArg(arg) << "\"";
+            std::string escapedArg = EscapeShellArg(arg);
+            if (arg.find(' ') != std::string::npos)
+               escapedArg = "\"" + escapedArg + "\"";
+            ss << " " << escapedArg;
     }
 
     m_clrPath.clear();
