@@ -230,6 +230,13 @@ bool InteropDebuggerBase::SingleStepOnBrk(pid_t pid, std::uintptr_t addr)
                     return parseSucceeded;
             }
 #endif // DEBUGGER_UNIX_ARM || DEBUGGER_UNIX_RISCV64
+#if DEBUGGER_UNIX_LOONGARCH64
+            if (m_sharedBreakpoints->IsInteropRendezvousBreakpoint(addr) || m_sharedBreakpoints->IsInteropBreakpoint(addr))
+            {
+                m_TIDs[pid].stop_signal = 0;
+                return true;
+            }
+#endif // DEBUGGER_UNIX_LOONGARCH64
             // Care about `__builtin_debugtrap()` in user code.
             m_TIDs[pid].stat = thread_stat_e::stopped_signal_event_detected;
             m_TIDs[pid].stop_event_data.signal = "SIGTRAP";
@@ -257,7 +264,11 @@ bool InteropDebuggerBase::SingleStepOnBrk(pid_t pid, std::uintptr_t addr)
             return false;
         }
 
+#if DEBUGGER_UNIX_LOONGARCH64
+        if (ptrace_info.si_code == SI_KERNEL)
+#else
         if (ptrace_info.si_code == TRAP_TRACE)
+#endif // DEBUGGER_UNIX_LOONGARCH64
         {
             // Care about `__builtin_trap()` in user code.
             m_TIDs[pid].stat = thread_stat_e::stopped_signal_event_detected;
@@ -707,6 +718,13 @@ void InteropDebuggerSignals::Parse_SIGILL(pid_t pid)
             if (AddSignalEventForCallerInUserCode(pid, m_TGID, m_uniqueInteropLibraries.get(), "SIGILL", m_TIDs[pid]))
                 m_eventedThreads.emplace_back(pid);
             break;
+#if DEBUGGER_UNIX_LOONGARCH64
+        case SI_KERNEL:
+            // Care about `__builtin_trap()` in user code.
+            if (AddSignalEventForUserCode(pid, m_uniqueInteropLibraries.get(), "SIGILL", m_TIDs[pid]))
+                m_eventedThreads.emplace_back(pid);
+            break;
+#endif // DEBUGGER_UNIX_LOONGARCH64
         }
     }
 }
@@ -842,7 +860,7 @@ void InteropDebuggerBase::ParseThreadsChanges()
             case PTRACE_EVENT_EXEC:
                 Parse_SIGTRAP__PTRACE_EVENT_EXEC(pid);
                 break;
-            
+
             case 0: // not ptrace-related event
                 Parse_SIGTRAP__NOT_PTRACE_EVENT(pid);
                 break;
@@ -1012,7 +1030,7 @@ void InteropDebugger::ContinueAllThreadsWithEvents()
         {
         case thread_stat_e::stopped_breakpoint_event_in_progress:
             BrkStopAllThreads(allThreadsWereStopped);
-            m_sharedBreakpoints->InteropStepOverBrk(tid.first, tid.second.stop_event_data.addr, 
+            m_sharedBreakpoints->InteropStepOverBrk(tid.first, tid.second.stop_event_data.addr,
                                                     [&](pid_t step_pid, std::uintptr_t step_addr) {return SingleStepOnBrk(step_pid, step_addr);});
             break;
         case thread_stat_e::stopped_signal_event_in_progress:
@@ -1626,6 +1644,40 @@ static std::array<unw_word_t, UNW_REG_LAST + 1> *InitContextRegs(std::array<unw_
     contextRegs[UNW_RISCV_X30]      = context->T5;
     contextRegs[UNW_RISCV_X31]      = context->T6;
     contextRegs[UNW_RISCV_PC]       = context->Pc;
+#elif defined(UNW_TARGET_LOONGARCH64)
+    contextRegs[UNW_LOONGARCH64_R0]       = context->R0;
+    contextRegs[UNW_LOONGARCH64_R1]       = context->Ra;
+    contextRegs[UNW_LOONGARCH64_R2]       = context->Tp;
+    contextRegs[UNW_LOONGARCH64_R3]       = context->Sp;
+    contextRegs[UNW_LOONGARCH64_R4]       = context->A0;
+    contextRegs[UNW_LOONGARCH64_R5]       = context->A1;
+    contextRegs[UNW_LOONGARCH64_R6]       = context->A2;
+    contextRegs[UNW_LOONGARCH64_R7]       = context->A3;
+    contextRegs[UNW_LOONGARCH64_R8]       = context->A4;
+    contextRegs[UNW_LOONGARCH64_R9]       = context->A5;
+    contextRegs[UNW_LOONGARCH64_R10]      = context->A6;
+    contextRegs[UNW_LOONGARCH64_R11]      = context->A7;
+    contextRegs[UNW_LOONGARCH64_R12]      = context->T0;
+    contextRegs[UNW_LOONGARCH64_R13]      = context->T1;
+    contextRegs[UNW_LOONGARCH64_R14]      = context->T2;
+    contextRegs[UNW_LOONGARCH64_R15]      = context->T3;
+    contextRegs[UNW_LOONGARCH64_R16]      = context->T4;
+    contextRegs[UNW_LOONGARCH64_R17]      = context->T5;
+    contextRegs[UNW_LOONGARCH64_R18]      = context->T6;
+    contextRegs[UNW_LOONGARCH64_R19]      = context->T7;
+    contextRegs[UNW_LOONGARCH64_R20]      = context->T8;
+    contextRegs[UNW_LOONGARCH64_R21]      = context->X0;
+    contextRegs[UNW_LOONGARCH64_R22]      = context->Fp;
+    contextRegs[UNW_LOONGARCH64_R23]      = context->S0;
+    contextRegs[UNW_LOONGARCH64_R24]      = context->S1;
+    contextRegs[UNW_LOONGARCH64_R25]      = context->S2;
+    contextRegs[UNW_LOONGARCH64_R26]      = context->S3;
+    contextRegs[UNW_LOONGARCH64_R27]      = context->S4;
+    contextRegs[UNW_LOONGARCH64_R28]      = context->S5;
+    contextRegs[UNW_LOONGARCH64_R29]      = context->S6;
+    contextRegs[UNW_LOONGARCH64_R30]      = context->S7;
+    contextRegs[UNW_LOONGARCH64_R31]      = context->S8;
+    contextRegs[UNW_LOONGARCH64_PC]       = context->Pc;
 #else
 #error "Unsupported platform"
 #endif

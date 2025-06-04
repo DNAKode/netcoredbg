@@ -31,6 +31,7 @@ Currently, NetCoreDbg can be built on Linux, MacOS, or Windows. Instructions for
 - x64
 - x86
 - RISC-V 64-bit
+- LoongArch 64-bit
 
 ### Unix
 

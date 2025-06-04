@@ -29,6 +29,8 @@ bool NeedSetPrevBrkPC()
     return false; // In case of arm32 breakpoint is illegal code interpreted by Linux kernel as breakpoint, no PC change need.
 #elif DEBUGGER_UNIX_RISCV64
     return false; // In case of riscv64 breakpoint is illegal code interpreted by Linux kernel as breakpoint, no PC change need.
+#elif DEBUGGER_UNIX_LOONGARCH64
+    return false; // In case of loongarch64 breakpoint is illegal code interpreted by Linux kernel as breakpoint, no PC change need.
 #else
 #error "Unsupported platform"
 #endif
@@ -49,6 +51,8 @@ void SetPrevBrkPC(user_regs_struct &regs)
     // In case of arm32 breakpoint is illegal code interpreted by Linux kernel as breakpoint, no PC change need.
 #elif DEBUGGER_UNIX_RISCV64
     // In case of riscv64 breakpoint is illegal code interpreted by Linux kernel as breakpoint, no PC change need.
+#elif DEBUGGER_UNIX_LOONGARCH64
+    // In case of loongarch64 breakpoint is illegal code interpreted by Linux kernel as breakpoint, no PC change need.
 #else
 #error "Unsupported platform"
 #endif
@@ -68,6 +72,8 @@ std::uintptr_t GetBrkAddrByPC(const user_regs_struct &regs)
     return std::uintptr_t(regs.uregs[REG_PC]);
 #elif DEBUGGER_UNIX_RISCV64
     return std::uintptr_t(regs.pc);
+#elif DEBUGGER_UNIX_LOONGARCH64
+    return std::uintptr_t(regs.csr_era);
 #else
 #error "Unsupported platform"
 #endif
@@ -87,6 +93,8 @@ std::uintptr_t GetBreakAddrByPC(const user_regs_struct &regs)
     return std::uintptr_t(regs.uregs[REG_PC]);
 #elif DEBUGGER_UNIX_RISCV64
     return std::uintptr_t(regs.pc);
+#elif DEBUGGER_UNIX_LOONGARCH64
+    return std::uintptr_t(regs.csr_era);
 #else
 #error "Unsupported platform"
 #endif
@@ -139,6 +147,8 @@ word_t EncodeBrkOpcode(word_t data, bool thumbCode)
         return ((data & ~((word_t)0xffff)) | 0x9002); // C.EBREAK
     else
         return ((data & ~((word_t)0xffffffff)) | 0x00100073); // EBREAK
+#elif DEBUGGER_UNIX_LOONGARCH64
+    return ((data & ~((word_t)0xffffffff)) | 0x002a0005); // BREAK 5
 #else
 #error "Unsupported platform"
 #endif
@@ -164,6 +174,8 @@ word_t RestoredOpcode(word_t dataWithBrk, word_t restoreData)
         return (dataWithBrk & ~((word_t)0xffff)) | (restoreData & 0xffff);
     else
         return (dataWithBrk & ~((word_t)0xffffffff)) | (restoreData & 0xffffffff);
+#elif DEBUGGER_UNIX_LOONGARCH64
+    return (dataWithBrk & ~((word_t)0xffffffff)) | (restoreData & 0xffffffff);
 #else
 #error "Unsupported platform"
 #endif

@@ -60,7 +60,7 @@ add_custom_command(
   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   COMMENT "Creating new dotnet project"
   VERBATIM
-)  
+)
 
 add_custom_command(
   OUTPUT ${ERRORMESSAGE_DLL_NAME}
@@ -229,6 +229,8 @@ if (INTEROP_DEBUGGING)
         add_definitions(-DDEBUGGER_UNIX_ARM)
     elseif (CLR_CMAKE_PLATFORM_UNIX_RISCV64)
         add_definitions(-DDEBUGGER_UNIX_RISCV64)
+    elseif (CLR_CMAKE_PLATFORM_UNIX_LOONGARCH64)
+        add_definitions(-DDEBUGGER_UNIX_LOONGARCH64)
     else()
         message(FATAL_ERROR "Interop debugging feature not implemented for this CPU architecture.")
     endif()
@@ -251,6 +253,8 @@ if (INTEROP_DEBUGGING)
         find_library(LIBUNWIND_LIBRARY_ARCH unwind-arm)
     elseif (CLR_CMAKE_PLATFORM_UNIX_RISCV64)
         find_library(LIBUNWIND_LIBRARY_ARCH unwind-riscv)
+    elseif (CLR_CMAKE_PLATFORM_UNIX_LOONGARCH64)
+        find_library(LIBUNWIND_LIBRARY_ARCH unwind-loongarch64)
     endif()
 
     if (${LIBUNWIND_INCLUDE_DIRS} STREQUAL "LIBUNWIND_INCLUDE_DIRS-NOTFOUND")

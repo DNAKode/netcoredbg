@@ -180,6 +180,40 @@ static std::array<int, UNW_REG_LAST + 1> InitPtraceRegOffset()
     res[UNW_RISCV_X30]      = 0xf0;
     res[UNW_RISCV_X31]      = 0xf8;
     res[UNW_RISCV_PC]       = 0x00;
+#elif defined(UNW_TARGET_LOONGARCH64)
+    res[UNW_LOONGARCH64_R0]       = 0x00;
+    res[UNW_LOONGARCH64_R1]       = 0x08;
+    res[UNW_LOONGARCH64_R2]       = 0x10;
+    res[UNW_LOONGARCH64_R3]       = 0x18;
+    res[UNW_LOONGARCH64_R4]       = 0x20;
+    res[UNW_LOONGARCH64_R5]       = 0x28;
+    res[UNW_LOONGARCH64_R6]       = 0x30;
+    res[UNW_LOONGARCH64_R7]       = 0x38;
+    res[UNW_LOONGARCH64_R8]       = 0x40;
+    res[UNW_LOONGARCH64_R9]       = 0x48;
+    res[UNW_LOONGARCH64_R10]      = 0x50;
+    res[UNW_LOONGARCH64_R11]      = 0x58;
+    res[UNW_LOONGARCH64_R12]      = 0x60;
+    res[UNW_LOONGARCH64_R13]      = 0x68;
+    res[UNW_LOONGARCH64_R14]      = 0x70;
+    res[UNW_LOONGARCH64_R15]      = 0x78;
+    res[UNW_LOONGARCH64_R16]      = 0x80;
+    res[UNW_LOONGARCH64_R17]      = 0x88;
+    res[UNW_LOONGARCH64_R18]      = 0x90;
+    res[UNW_LOONGARCH64_R19]      = 0x98;
+    res[UNW_LOONGARCH64_R20]      = 0xa0;
+    res[UNW_LOONGARCH64_R21]      = 0xa8;
+    res[UNW_LOONGARCH64_R22]      = 0xb0;
+    res[UNW_LOONGARCH64_R23]      = 0xb8;
+    res[UNW_LOONGARCH64_R24]      = 0xc0;
+    res[UNW_LOONGARCH64_R25]      = 0xc8;
+    res[UNW_LOONGARCH64_R26]      = 0xd0;
+    res[UNW_LOONGARCH64_R27]      = 0xd8;
+    res[UNW_LOONGARCH64_R28]      = 0xe0;
+    res[UNW_LOONGARCH64_R29]      = 0xe8;
+    res[UNW_LOONGARCH64_R30]      = 0xf0;
+    res[UNW_LOONGARCH64_R31]      = 0xf8;
+    res[UNW_LOONGARCH64_PC]       = 0x108;
 #else
 #error "Unsupported platform"
 #endif
@@ -229,7 +263,7 @@ static void PutUnwindInfo(unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
 static int GetDynInfoListAddr(unw_addr_space_t, unw_word_t *, void *)
 {
     // TODO there is currently no way to locate the dyn-info list by a remote unwinder. On ia64, this is done via a special
-    //      unwind-table entry. Perhaps something similar can be done with DWARF2 unwind info. 
+    //      unwind-table entry. Perhaps something similar can be done with DWARF2 unwind info.
     return -UNW_ENOINFO;
 }
 

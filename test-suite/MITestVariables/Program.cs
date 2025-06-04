@@ -458,10 +458,11 @@ namespace MITestVariables
         {
             get
             {
-                // CoreCLR 7.0 and 8.0 have issue with abortable internal native code.
+                // CoreCLR 7.0, 8.0 and 9.0 have issue with abortable internal native code.
                 // https://github.com/dotnet/runtime/issues/82422
                 if (System.Environment.Version.Major == 7 ||
-                    System.Environment.Version.Major == 8)
+                    System.Environment.Version.Major == 8 ||
+                    System.Environment.Version.Major == 9)
                 {
                     while (true)
                     {

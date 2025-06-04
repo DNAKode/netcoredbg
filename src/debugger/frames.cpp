@@ -41,6 +41,8 @@ static std::uintptr_t GetIP(CONTEXT *context)
     return (std::uintptr_t)context->Pc;
 #elif defined(_TARGET_RISCV64_)
     return (std::uintptr_t)context->Pc;
+#elif defined(_TARGET_LOONGARCH64_)
+    return (std::uintptr_t)context->Pc;
 #else
 #error "Unsupported platform"
 #endif
@@ -57,6 +59,8 @@ static std::uintptr_t GetSP(CONTEXT *context)
 #elif defined(_TARGET_ARM64_)
     return (std::uintptr_t)context->Sp;
 #elif defined(_TARGET_RISCV64_)
+    return (std::uintptr_t)context->Sp;
+#elif defined(_TARGET_LOONGARCH64_)
     return (std::uintptr_t)context->Sp;
 #else
 #error "Unsupported platform"
@@ -75,6 +79,8 @@ static std::uintptr_t GetFP(CONTEXT *context)
     return (std::uintptr_t)context->Fp;
 #elif defined(_TARGET_RISCV64_)
     return (std::uintptr_t)context->Fp;
+#elif defined(_TARGET_LOONGARCH64_)
+    return (std::uintptr_t)context->Fp;
 #else
 #error "Unsupported platform"
 #endif
@@ -91,6 +97,8 @@ static void SetFP(CONTEXT *context, std::uintptr_t value)
 #elif defined(_TARGET_ARM64_)
     context->Fp = value;
 #elif defined(_TARGET_RISCV64_)
+    context->Fp = value;
+#elif defined(_TARGET_LOONGARCH64_)
     context->Fp = value;
 #else
 #error "Unsupported platform"
