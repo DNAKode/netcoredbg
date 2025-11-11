@@ -20,6 +20,39 @@ if (NOT WIN32)
     target_include_directories(corguids PRIVATE ${CORECLR_SRC_DIR}/inc ${CORECLR_SRC_DIR}/debug/inc)
 endif()
 
+if (NOT WIN32)
+    set(CORECLR_MINIPAL_SRC_DIR "${NATIVE_SRC_DIR}/minipal")
+    if (EXISTS "${CORECLR_MINIPAL_SRC_DIR}/guid.c")
+        # Build minipalguid static library from coreclr source files
+        include(CheckFunctionExists)
+        include(CheckIncludeFiles)
+        include(CheckSymbolExists)
+
+        check_include_files("windows.h;bcrypt.h" HAVE_BCRYPT_H)
+        check_include_files("sys/auxv.h;asm/hwcap.h" HAVE_AUXV_HWCAP_H)
+        check_include_files("asm/hwprobe.h" HAVE_HWPROBE_H)
+
+        check_function_exists(sysctlbyname HAVE_SYSCTLBYNAME)
+        check_function_exists(fsync HAVE_FSYNC)
+
+        check_symbol_exists(arc4random_buf "stdlib.h" HAVE_ARC4RANDOM_BUF)
+        check_symbol_exists(O_CLOEXEC fcntl.h HAVE_O_CLOEXEC)
+        check_symbol_exists(CLOCK_MONOTONIC time.h HAVE_CLOCK_MONOTONIC)
+        check_symbol_exists(CLOCK_MONOTONIC_COARSE time.h HAVE_CLOCK_MONOTONIC_COARSE)
+        check_symbol_exists(clock_gettime_nsec_np time.h HAVE_CLOCK_GETTIME_NSEC_NP)
+
+        if(CMAKE_C_BYTE_ORDER STREQUAL "BIG_ENDIAN")
+            set(BIGENDIAN 1)
+        endif()
+
+        configure_file(${CORECLR_MINIPAL_SRC_DIR}/minipalconfig.h.in ${CORECLR_MINIPAL_SRC_DIR}/minipalconfig.h)
+
+        set(MINIPALGUID_SOURCES "${CORECLR_MINIPAL_SRC_DIR}/guid.c" "${CORECLR_MINIPAL_SRC_DIR}/random.c")
+        add_library(minipalguid STATIC ${MINIPALGUID_SOURCES})
+        target_include_directories(minipalguid PRIVATE ${CORECLR_MINIPAL_SRC_DIR}/minipalconfig.h ${CORECLR_MINIPAL_SRC_DIR}/utils.h ${CORECLR_MINIPAL_SRC_DIR}/guid.h ${CORECLR_MINIPAL_SRC_DIR}/random.h)
+    endif()
+endif()
+
 # Include coreclr headers
 
 if (NOT WIN32)
@@ -206,6 +239,9 @@ if (WIN32)
     target_link_libraries(netcoredbg corguids wsock32 ws2_32 linenoise)
 else()
     target_link_libraries(netcoredbg corguids dl pthread linenoise)
+    if (EXISTS "${CORECLR_MINIPAL_SRC_DIR}/guid.c")
+        target_link_libraries(netcoredbg minipalguid)
+    endif()
 endif()
 
 if (NCDB_DOTNET_STARTUP_HOOK)
