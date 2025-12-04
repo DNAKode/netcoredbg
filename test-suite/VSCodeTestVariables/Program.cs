@@ -558,7 +558,8 @@ namespace VSCodeTestVariables
                 // https://github.com/dotnet/runtime/issues/82422
                 if (System.Environment.Version.Major == 7 ||
                     System.Environment.Version.Major == 8 ||
-                    System.Environment.Version.Major == 9)
+                    System.Environment.Version.Major == 9 ||
+                    System.Environment.Version.Major == 10)
                 {
                     while (true)
                     {
