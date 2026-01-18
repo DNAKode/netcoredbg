@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          CC=clang CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DINTEROP_DEBUGGING=0 -DCMAKE_INSTALL_PREFIX=../bin
+          CC=clang CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DINTEROP_DEBUGGING=0 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=../bin
 
       - name: Build
         run: |
