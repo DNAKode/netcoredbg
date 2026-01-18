@@ -1,5 +1,11 @@
 # Debugger for .NET Core runtime
 
+Note: This fork tracks Samsung/netcoredbg and adds a small set of local changes:
+- Load symbols for in-memory modules (including in-memory PDBs).
+- Read PE bytes only for in-memory modules.
+- Do not quote process arguments when no spaces are present.
+This fork is used to produce macOS arm64 build artifacts for downstream use.
+
 The debugger provides [GDB/MI](https://sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI.html)
 and [VSCode Debug Adapterprotocol](https://microsoft.github.io/debug-adapter-protocol/)
 and allows to debug .NET apps under .NET Core runtime.  Also debugger allows debugging from
