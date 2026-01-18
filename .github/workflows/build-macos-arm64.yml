@@ -1,0 +1,39 @@
+name: build-macos-arm64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          CC=clang CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Release -DINTEROP_DEBUGGING=1 -DCMAKE_INSTALL_PREFIX=../bin
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build . --target install
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp LICENSE bin/LICENSE
+          tar -czf dist/netcoredbg-osx-arm64.tar.gz -C bin netcoredbg LICENSE
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: netcoredbg-osx-arm64.tar.gz
+          path: dist/netcoredbg-osx-arm64.tar.gz
