@@ -1,10 +1,30 @@
 # Debugger for .NET Core runtime
 
-Note: This fork tracks Samsung/netcoredbg and adds a small set of local changes:
+## DNAKode fork notes (tracking Samsung/netcoredbg)
+
+This fork tracks `Samsung/netcoredbg` with minimal, well-scoped changes and is used by the `VB.NET` Language Support project to curate debugger binaries. We aim to keep the delta small and upstreamable.
+
+### Local changes carried in this fork
 - Load symbols for in-memory modules (including in-memory PDBs).
 - Read PE bytes only for in-memory modules.
 - Do not quote process arguments when no spaces are present.
-This fork is used to produce macOS arm64 build artifacts for downstream use.
+
+### macOS arm64 status (as of 2026-01-18)
+- **Goal:** Produce a native macOS arm64 `netcoredbg` binary for Apple Silicon.
+- **Current blocker:** The legacy `dotnet/coreclr` source dependency does not build on Darwin arm64; netcoredbg’s build currently pulls CoreCLR from the archived `dotnet/coreclr` repo, which lacks a supported Darwin arm64 branch.
+- **Stopgap:** Downstream packaging (in `DNAKode/vbnet-lsp`) ships the macOS x64 `netcoredbg` binary on arm64 under Rosetta.
+- **Investigation path:** Switch the CoreCLR source fetch to `dotnet/runtime` (which is the modern home for CoreCLR) and update platform detection/build flags for Darwin arm64.
+
+### CI build workflow for macOS arm64
+- Workflow: `.github/workflows/build-macos-arm64.yml` (runs on `macos-14` arm64 runners).
+- The workflow currently configures and builds `netcoredbg`, then packages `netcoredbg` + `LICENSE` into a tarball.
+- Failures to date:
+  - CMake compatibility issues (fixed with `-DCMAKE_POLICY_VERSION_MINIMUM=3.5`).
+  - CoreCLR source fetch errors when attempting to target a modern branch.
+  - Build errors in CoreCLR headers for Darwin arm64 when using the legacy repo.
+
+### Contribution intent
+We document these changes and build attempts to ease upstreaming. If you’re from the Samsung/netcoredbg team or a community maintainer, we’re happy to collaborate on a clean, minimal patch series once the Darwin arm64 path is clarified.
 
 The debugger provides [GDB/MI](https://sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI.html)
 and [VSCode Debug Adapterprotocol](https://microsoft.github.io/debug-adapter-protocol/)
